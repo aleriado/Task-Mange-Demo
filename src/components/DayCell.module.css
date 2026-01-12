@@ -1,0 +1,72 @@
+.cell {
+  position: relative;
+  min-height: 120px;
+  padding: 0.5rem;
+  background: var(--color-background);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  height: 100%;
+}
+
+.cell:hover {
+  background: var(--color-background-hover);
+}
+
+.cell.otherMonth {
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+}
+
+.cell.otherMonth .dayNumber {
+  opacity: 0.4;
+}
+
+.cell.today {
+  background: rgba(25, 118, 210, 0.08);
+}
+
+.cell.today .dayNumber {
+  color: var(--color-primary);
+  font-weight: 600;
+  position: relative;
+}
+
+.cell.today .dayNumber::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.15;
+}
+
+.cell.selected {
+  background: rgba(25, 118, 210, 0.16);
+}
+
+.cell.selected .dayNumber {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.cell.inRange {
+  background: rgba(25, 118, 210, 0.1);
+}
+
+.cell.inRange .dayNumber {
+  color: var(--color-primary);
+}
+
+.dayNumber {
+  font-size: 0.8125rem;
+  display: block;
+  padding: 0.25rem;
+  color: var(--color-text);
+  transition: all 0.15s ease;
+}
+

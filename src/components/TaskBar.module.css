@@ -1,0 +1,81 @@
+.bar {
+  position: absolute;
+  height: 26px;
+  border-radius: 6px;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.2s ease;
+  user-select: none;
+  overflow: hidden;
+}
+
+.bar:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.23);
+  transform: translateY(-1px);
+}
+
+.barContent {
+  flex: 1;
+  padding: 0 0.625rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  min-width: 0;
+}
+
+.taskName {
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.01em;
+}
+
+.resizeHandle {
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+  pointer-events: auto;
+  position: relative;
+}
+
+.resizeHandle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 60%;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.resizeHandle:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.resizeHandle:hover::before {
+  opacity: 1;
+}
+
+.leftHandle {
+  border-radius: 6px 0 0 6px;
+}
+
+.rightHandle {
+  border-radius: 0 6px 6px 0;
+}
+
