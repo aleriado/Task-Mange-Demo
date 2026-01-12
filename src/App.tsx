@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback, useMemo } from 'react';
+import React, { useReducer, useCallback, useMemo, useEffect } from 'react';
 import { format, parseISO, addDays, differenceInDays } from 'date-fns';
 import type { Task, Category, FilterState, AppState } from './types';
 import { normalizeDateRange, getTimeRangeFilter, dateRangesOverlap } from './lib/dates';
@@ -11,9 +11,11 @@ type AppAction =
   | { type: 'SELECTION_START'; isoDate: string }
   | { type: 'SELECTION_UPDATE'; isoDate: string }
   | { type: 'SELECTION_END' }
-  | { type: 'MODAL_OPEN'; draftRange?: { start: string; end: string } }
+  | { type: 'MODAL_OPEN'; draftRange?: { start: string; end: string }; editingTaskId?: string }
   | { type: 'MODAL_CLOSE' }
   | { type: 'TASK_CREATE'; name: string; category: Category; start: string; end: string }
+  | { type: 'TASK_UPDATE'; taskId: string; name: string; category: Category; start: string; end: string }
+  | { type: 'TASK_DELETE'; taskId: string }
   | { type: 'TASK_MOVE'; taskId: string; newStartDate: string }
   | { type: 'TASK_RESIZE'; taskId: string; newStart: string; newEnd: string }
   | { type: 'FILTERS_CHANGE'; filters: FilterState }
@@ -94,6 +96,25 @@ function appReducer(state: AppState, action: AppAction): AppState {
         tasks: [...state.tasks, newTask],
         modal: { open: false },
         selection: { isSelecting: false }
+      };
+    }
+
+    case 'TASK_UPDATE': {
+      return {
+        ...state,
+        tasks: state.tasks.map(t =>
+          t.id === action.taskId
+            ? { ...t, name: action.name, category: action.category, start: action.start, end: action.end }
+            : t
+        ),
+        modal: { open: false }
+      };
+    }
+
+    case 'TASK_DELETE': {
+      return {
+        ...state,
+        tasks: state.tasks.filter(t => t.id !== action.taskId)
       };
     }
 
@@ -221,14 +242,44 @@ function App() {
 
   const handleTaskCreate = useCallback((name: string, category: Category) => {
     if (!state.modal.draftRange) return;
+    if (state.modal.editingTaskId) {
+      // Update existing task
+      dispatch({
+        type: 'TASK_UPDATE',
+        taskId: state.modal.editingTaskId,
+        name,
+        category,
+        start: state.modal.draftRange.start,
+        end: state.modal.draftRange.end
+      });
+    } else {
+      // Create new task
+      dispatch({
+        type: 'TASK_CREATE',
+        name,
+        category,
+        start: state.modal.draftRange.start,
+        end: state.modal.draftRange.end
+      });
+    }
+  }, [state.modal.draftRange, state.modal.editingTaskId]);
+
+  const handleTaskEdit = useCallback((taskId: string) => {
+    const task = state.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
     dispatch({
-      type: 'TASK_CREATE',
-      name,
-      category,
-      start: state.modal.draftRange.start,
-      end: state.modal.draftRange.end
+      type: 'MODAL_OPEN',
+      draftRange: { start: task.start, end: task.end },
+      editingTaskId: taskId
     });
-  }, [state.modal.draftRange]);
+  }, [state.tasks]);
+
+  const handleTaskDelete = useCallback((taskId: string) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      dispatch({ type: 'TASK_DELETE', taskId });
+    }
+  }, []);
 
   const handleTaskMove = useCallback((taskId: string, newStartDate: string) => {
     dispatch({ type: 'TASK_MOVE', taskId, newStartDate });
@@ -246,12 +297,42 @@ function App() {
     dispatch({ type: 'MONTH_CHANGE', month: newMonth });
   }, []);
 
+  const handleQuickTaskCreate = useCallback(() => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    dispatch({
+      type: 'MODAL_OPEN',
+      draftRange: { start: today, end: today }
+    });
+  }, []);
+
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+N or Cmd+N for new task
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleQuickTaskCreate();
+      }
+      
+      // Escape to close modal
+      if (e.key === 'Escape' && state.modal.open) {
+        handleModalClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleQuickTaskCreate, handleModalClose, state.modal.open]);
+
   const filteredTasks = useMemo(
     () => filterTasks(state.tasks, state.filters),
     [state.tasks, state.filters]
   );
 
   const draftRange = state.modal.draftRange;
+  const editingTask = state.modal.editingTaskId 
+    ? state.tasks.find(t => t.id === state.modal.editingTaskId)
+    : null;
 
   return (
     <div className={styles.app}>
@@ -270,6 +351,8 @@ function App() {
           onSelectionEnd={handleSelectionEnd}
           onTaskMove={handleTaskMove}
           onTaskResize={handleTaskResize}
+          onTaskEdit={handleTaskEdit}
+          onTaskDelete={handleTaskDelete}
           onMonthChange={handleMonthChange}
         />
       </div>
@@ -277,10 +360,22 @@ function App() {
         <TaskModal
           isOpen={state.modal.open}
           draftRange={draftRange}
+          initialName={editingTask?.name}
+          initialCategory={editingTask?.category}
+          isEditing={!!state.modal.editingTaskId}
           onClose={handleModalClose}
           onSubmit={handleTaskCreate}
         />
       )}
+      
+      <button 
+        className={styles.fab}
+        onClick={handleQuickTaskCreate}
+        aria-label="Create new task"
+        title="Create new task (Ctrl+N)"
+      >
+        +
+      </button>
     </div>
   );
 }

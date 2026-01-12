@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { generateMonthGrid, normalizeDateRange, type WeekRow } from '../lib/dates';
 import { calculateTaskSegments, groupSegmentsByWeek, type TaskSegment } from '../lib/taskSegments';
-import { parseISO, format, addMonths, subMonths } from 'date-fns';
+import { parseISO, format, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import type { Task, SelectionState } from '../types';
 import { DayCell } from './DayCell';
 import { TaskBar } from './TaskBar';
@@ -18,6 +18,8 @@ interface CalendarMonthProps {
   onSelectionEnd: () => void;
   onTaskMove: (taskId: string, newStartDate: string) => void;
   onTaskResize: (taskId: string, newStart: string, newEnd: string) => void;
+  onTaskEdit?: (taskId: string) => void;
+  onTaskDelete?: (taskId: string) => void;
   onMonthChange: (newMonth: Date) => void;
 }
 
@@ -31,6 +33,8 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
   onSelectionEnd,
   onTaskMove,
   onTaskResize,
+  onTaskEdit,
+  onTaskDelete,
   onMonthChange
 }) => {
   const [weekRows, setWeekRows] = useState<WeekRow[]>([]);
@@ -87,6 +91,51 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
     return selection.start === isoDate;
   };
 
+  // Calculate task statistics for current month
+  const currentMonthTasks = useMemo(() => {
+    const monthStart = format(startOfMonth(month), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(month), 'yyyy-MM-dd');
+    
+    return tasks.filter(task => {
+      const taskStart = parseISO(task.start);
+      const taskEnd = parseISO(task.end);
+      const monthStartDate = parseISO(monthStart);
+      const monthEndDate = parseISO(monthEnd);
+      
+      // Task overlaps with current month
+      return taskStart <= monthEndDate && taskEnd >= monthStartDate;
+    });
+  }, [tasks, month]);
+
+  const taskStats = useMemo(() => {
+    const stats = {
+      total: currentMonthTasks.length,
+      completed: 0,
+      inProgress: 0,
+      todo: 0,
+      review: 0
+    };
+    
+    currentMonthTasks.forEach((task: Task) => {
+      switch (task.category) {
+        case 'Completed':
+          stats.completed++;
+          break;
+        case 'In Progress':
+          stats.inProgress++;
+          break;
+        case 'To Do':
+          stats.todo++;
+          break;
+        case 'Review':
+          stats.review++;
+          break;
+      }
+    });
+    
+    return stats;
+  }, [currentMonthTasks]);
+
   const weekDayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const handlePreviousMonth = () => {
@@ -138,41 +187,63 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
       aria-label="Calendar navigation"
     >
       <div className={styles.header}>
-        <button 
-          className={styles.navButton} 
-          onClick={handlePreviousMonth}
-          aria-label="Previous month"
-        >
-          ←
-        </button>
-        <div className={styles.monthTitle}>
-          {format(month, 'MMMM yyyy')}
+        <div className={styles.navigationSection}>
+          <button 
+            className={styles.navButton} 
+            onClick={handlePreviousMonth}
+            aria-label="Previous month"
+          >
+            ←
+          </button>
+          <div className={styles.monthInfo}>
+            <div className={styles.monthTitle}>
+              {format(month, 'MMMM yyyy')}
+            </div>
+            {taskStats.total > 0 && (
+              <div className={styles.taskStats}>
+                {taskStats.total} task{taskStats.total !== 1 ? 's' : ''}
+                {taskStats.completed > 0 && (
+                  <span className={styles.statBadge} data-category="completed">
+                    {taskStats.completed} done
+                  </span>
+                )}
+                {taskStats.inProgress > 0 && (
+                  <span className={styles.statBadge} data-category="progress">
+                    {taskStats.inProgress} in progress
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <button 
+            className={styles.navButton} 
+            onClick={handleNextMonth}
+            aria-label="Next month"
+          >
+            →
+          </button>
         </div>
-        <button 
-          className={styles.navButton} 
-          onClick={handleNextMonth}
-          aria-label="Next month"
-        >
-          →
-        </button>
-        <button 
-          className={styles.datePickerButton} 
-          onClick={handleRandomDate}
-          aria-label="Open date picker"
-        >
-          📅
-        </button>
-        <button 
-          className={styles.todayButton} 
-          onClick={handleTodayClick}
-          aria-label="Go to today"
-        >
-          Today
-        </button>
+        
+        <div className={styles.actionSection}>
+          <button 
+            className={styles.datePickerButton} 
+            onClick={handleRandomDate}
+            aria-label="Open date picker"
+          >
+            📅
+          </button>
+          <button 
+            className={styles.todayButton} 
+            onClick={handleTodayClick}
+            aria-label="Go to today"
+          >
+            Today
+          </button>
+        </div>
       </div>
 
       <div className={styles.helpText}>
-        Use ← → arrow keys, R for date picker, T for today
+        Use ← → arrow keys, R for date picker, T for today • Double-click tasks to edit
       </div>
 
       <div className={styles.weekHeaders}>
@@ -198,6 +269,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   day={day}
                   isSelected={isDateSelected(day.isoDate)}
                   isInSelectionRange={isDateInSelectionRange(day.isoDate)}
+                  tasks={tasks}
                   onPointerDown={onSelectionStart}
                   onPointerEnter={onSelectionUpdate}
                 />
@@ -212,6 +284,8 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
                   cellWidth={cellWidthState}
                   onMove={onTaskMove}
                   onResize={onTaskResize}
+                  onEdit={onTaskEdit}
+                  onDelete={onTaskDelete}
                 />
               ))}
             </div>

@@ -7,6 +7,7 @@ interface TaskModalProps {
   draftRange?: DateRange;
   initialName?: string;
   initialCategory?: Category;
+  isEditing?: boolean;
   onClose: () => void;
   onSubmit: (name: string, category: Category) => void;
 }
@@ -18,6 +19,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   draftRange,
   initialName = '',
   initialCategory = "To Do",
+  isEditing = false,
   onClose,
   onSubmit
 }) => {
@@ -81,7 +83,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   return (
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h2 className={styles.title}>Create New Task</h2>
+        <h2 className={styles.title}>
+          {isEditing ? 'Edit Task' : 'Create New Task'}
+        </h2>
         
         {draftRange && (
           <div className={styles.rangeInfo}>
@@ -136,7 +140,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               className={styles.submitButton}
               disabled={!name.trim()}
             >
-              Create
+              {isEditing ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { TaskSegment } from '../lib/taskSegments';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, differenceInDays } from 'date-fns';
 import styles from './TaskBar.module.css';
 
 interface TaskBarProps {
@@ -8,33 +8,34 @@ interface TaskBarProps {
   cellWidth: number;
   onMove: (taskId: string, newStartDate: string) => void;
   onResize: (taskId: string, newStart: string, newEnd: string) => void;
+  onEdit?: (taskId: string) => void;
+  onDelete?: (taskId: string) => void;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  "To Do": "#4a90e2",
-  "In Progress": "#f5a623",
-  "Review": "#bd10e0",
-  "Completed": "#50e3c2"
-};
 
 export const TaskBar: React.FC<TaskBarProps> = ({
   segment,
   cellWidth,
   onMove,
-  onResize
+  onResize,
+  onEdit,
+  onDelete
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null);
+  const [showActions, setShowActions] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef<{ x: number; y: number; date: string } | null>(null);
 
   const task = segment.task;
-  const color = CATEGORY_COLORS[task.category] || "#4a90e2";
   const left = segment.startColumn * cellWidth;
   const width = segment.widthInColumns * cellWidth - 4; // 4px margin
-  const TASK_BAR_HEIGHT = 26;
+  const TASK_BAR_HEIGHT = 28;
   const TASK_BAR_MARGIN = 2;
   const top = 2 + segment.rowIndex * (TASK_BAR_HEIGHT + TASK_BAR_MARGIN);
+  
+  // Calculate task duration
+  const duration = differenceInDays(parseISO(task.end), parseISO(task.start)) + 1;
+  const isCompleted = task.category === 'Completed';
 
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
@@ -186,32 +187,80 @@ export const TaskBar: React.FC<TaskBarProps> = ({
     };
   };
 
+  const handleDoubleClick = () => {
+    if (onEdit) {
+      onEdit(task.id);
+    }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowActions(!showActions);
+  };
+
   return (
     <div
       ref={barRef}
-      className={styles.bar}
+      className={`${styles.bar} ${isCompleted ? styles.completed : ''} ${isDragging ? styles.dragging : ''}`}
       style={{
         left: `${left}px`,
         top: `${top}px`,
         width: `${width}px`,
-        backgroundColor: color,
       }}
+      data-category={task.category}
       onPointerDown={handleBarPointerDown}
-      title={`${task.name} (${task.start} to ${task.end})`}
+      onDoubleClick={handleDoubleClick}
+      onContextMenu={handleContextMenu}
+      title={`${task.name} (${duration} day${duration > 1 ? 's' : ''})`}
     >
       <div
         className={`${styles.resizeHandle} ${styles.leftHandle}`}
         onPointerDown={handleResizePointerDown('left')}
         title="Resize start"
       />
+      
       <div className={styles.barContent}>
-        <span className={styles.taskName}>{task.name}</span>
+        <div className={styles.taskInfo}>
+          <span className={styles.taskName}>{task.name}</span>
+          {duration > 1 && (
+            <span className={styles.duration}>{duration}d</span>
+          )}
+        </div>
+        <div className={styles.categoryIndicator} />
       </div>
+      
       <div
         className={`${styles.resizeHandle} ${styles.rightHandle}`}
         onPointerDown={handleResizePointerDown('right')}
         title="Resize end"
       />
+
+      {showActions && (
+        <div className={styles.actionMenu}>
+          {onEdit && (
+            <button 
+              className={styles.actionButton}
+              onClick={() => {
+                onEdit(task.id);
+                setShowActions(false);
+              }}
+            >
+              ✏️ Edit
+            </button>
+          )}
+          {onDelete && (
+            <button 
+              className={styles.actionButton}
+              onClick={() => {
+                onDelete(task.id);
+                setShowActions(false);
+              }}
+            >
+              🗑️ Delete
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

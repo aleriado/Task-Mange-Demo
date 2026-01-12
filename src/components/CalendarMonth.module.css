@@ -10,58 +10,112 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
   border-bottom: 1px solid var(--color-border);
+}
+
+.navigationSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.monthInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.monthTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+}
+
+.taskStats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.statBadge {
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: white;
+}
+
+.statBadge[data-category="completed"] {
+  background: var(--color-completed);
+}
+
+.statBadge[data-category="progress"] {
+  background: var(--color-progress);
+}
+
+.actionSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
 .navButton {
   background: var(--color-background);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.125rem;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-lg);
   color: var(--color-text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
+  min-width: 44px;
+  height: 44px;
+  box-shadow: var(--shadow-xs);
 }
 
 .navButton:hover {
   background: var(--color-background-hover);
-  border-color: var(--color-border);
+  border-color: var(--color-border-focus);
+  box-shadow: var(--shadow-sm);
 }
 
 .navButton:active {
   transform: translateY(1px);
+  box-shadow: var(--shadow-xs);
 }
 
 .datePickerButton {
   background: var(--color-background);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.125rem;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
-  margin-left: 0.5rem;
+  min-width: 44px;
+  height: 44px;
+  box-shadow: var(--shadow-xs);
 }
 
 .datePickerButton:hover {
   background: var(--color-background-hover);
-  border-color: var(--color-border);
+  border-color: var(--color-border-focus);
   transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .datePickerButton:active {
@@ -71,23 +125,24 @@
 .todayButton {
   background: var(--color-primary);
   border: 1px solid var(--color-primary);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: white;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-inverse);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  font-weight: 500;
-  margin-left: 0.5rem;
+  height: 44px;
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-xs);
 }
 
 .todayButton:hover {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .todayButton:active {
@@ -96,10 +151,37 @@
 
 .helpText {
   text-align: center;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  margin-bottom: 1rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
   font-style: italic;
+  line-height: var(--line-height-relaxed);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--space-lg);
+    align-items: stretch;
+  }
+  
+  .navigationSection {
+    justify-content: center;
+  }
+  
+  .actionSection {
+    justify-content: center;
+  }
+  
+  .monthTitle {
+    font-size: var(--font-size-xl);
+  }
+  
+  .taskStats {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 .monthTitle {
