@@ -187,12 +187,6 @@ export const TaskBar: React.FC<TaskBarProps> = ({
     };
   };
 
-  const handleDoubleClick = () => {
-    if (onEdit) {
-      onEdit(task.id);
-    }
-  };
-
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowActions(!showActions);
@@ -209,9 +203,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({
       }}
       data-category={task.category}
       onPointerDown={handleBarPointerDown}
-      onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
-      title={`${task.name} (${duration} day${duration > 1 ? 's' : ''})`}
+      title={`${task.name} (${duration} day${duration > 1 ? 's' : ''}) - Click ✏️ to edit`}
     >
       <div
         className={`${styles.resizeHandle} ${styles.leftHandle}`}
@@ -226,7 +219,22 @@ export const TaskBar: React.FC<TaskBarProps> = ({
             <span className={styles.duration}>{duration}d</span>
           )}
         </div>
-        <div className={styles.categoryIndicator} />
+        <div className={styles.taskActions}>
+          {onEdit && (
+            <button 
+              className={styles.editButton}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(task.id);
+              }}
+              title="Edit task"
+            >
+              ✏️
+            </button>
+          )}
+          <div className={styles.categoryIndicator} />
+        </div>
       </div>
       
       <div

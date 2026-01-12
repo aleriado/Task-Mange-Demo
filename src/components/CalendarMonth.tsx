@@ -162,30 +162,8 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
     onMonthChange(new Date());
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      handlePreviousMonth();
-    } else if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      handleNextMonth();
-    } else if (event.key === 'r' || event.key === 'R') {
-      event.preventDefault();
-      setIsDatePickerOpen(true);
-    } else if (event.key === 't' || event.key === 'T') {
-      event.preventDefault();
-      handleTodayClick();
-    }
-  };
-
   return (
-    <div 
-      className={styles.calendarContainer} 
-      tabIndex={0} 
-      onKeyDown={handleKeyDown}
-      role="application"
-      aria-label="Calendar navigation"
-    >
+    <div className={styles.calendarContainer}>
       <div className={styles.header}>
         <div className={styles.navigationSection}>
           <button 
@@ -243,7 +221,7 @@ export const CalendarMonth: React.FC<CalendarMonthProps> = ({
       </div>
 
       <div className={styles.helpText}>
-        Use ← → arrow keys, R for date picker, T for today • Double-click tasks to edit
+        Click ✏️ to edit tasks • Click + button to add new tasks
       </div>
 
       <div className={styles.weekHeaders}>

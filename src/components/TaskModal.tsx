@@ -38,31 +38,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
   }, [isOpen, initialName, initialCategory]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    const handleEnter = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && isOpen) {
-        handleSubmit(e);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    document.addEventListener('keydown', handleEnter);
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.removeEventListener('keydown', handleEnter);
-    };
-  }, [isOpen, name, category]);
-
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent | KeyboardEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
       onSubmit(name.trim(), category);
@@ -84,7 +62,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     <div className={styles.backdrop} onClick={handleBackdropClick}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h2 className={styles.title}>
-          {isEditing ? 'Edit Task' : 'Create New Task'}
+          {isEditing ? '✏️ Edit Task' : '➕ Create New Task'}
         </h2>
         
         {draftRange && (

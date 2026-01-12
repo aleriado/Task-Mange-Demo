@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, { useReducer, useCallback, useMemo } from 'react';
 import { format, parseISO, addDays, differenceInDays } from 'date-fns';
 import type { Task, Category, FilterState, AppState } from './types';
 import { normalizeDateRange, getTimeRangeFilter, dateRangesOverlap } from './lib/dates';
@@ -305,25 +305,6 @@ function App() {
     });
   }, []);
 
-  // Add keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+N or Cmd+N for new task
-      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-        e.preventDefault();
-        handleQuickTaskCreate();
-      }
-      
-      // Escape to close modal
-      if (e.key === 'Escape' && state.modal.open) {
-        handleModalClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleQuickTaskCreate, handleModalClose, state.modal.open]);
-
   const filteredTasks = useMemo(
     () => filterTasks(state.tasks, state.filters),
     [state.tasks, state.filters]
@@ -372,7 +353,7 @@ function App() {
         className={styles.fab}
         onClick={handleQuickTaskCreate}
         aria-label="Create new task"
-        title="Create new task (Ctrl+N)"
+        title="Create new task"
       >
         +
       </button>

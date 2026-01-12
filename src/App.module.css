@@ -18,13 +18,13 @@
   position: fixed;
   bottom: var(--space-2xl);
   right: var(--space-2xl);
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   border: none;
   color: var(--color-text-inverse);
-  font-size: var(--font-size-2xl);
+  font-size: 28px;
   font-weight: var(--font-weight-normal);
   cursor: pointer;
   box-shadow: var(--shadow-lg);
@@ -33,16 +33,32 @@
   align-items: center;
   justify-content: center;
   z-index: var(--z-fixed);
+  line-height: 1;
 }
 
 .fab:hover {
-  background: var(--color-primary-hover);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, #0d47a1 100%);
   box-shadow: var(--shadow-xl);
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 .fab:active {
-  transform: scale(0.95);
+  transform: scale(1.05);
+}
+
+.fab::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  z-index: -1;
+  opacity: 0;
+  transition: var(--transition-base);
+}
+
+.fab:hover::before {
+  opacity: 0.3;
 }
 
 /* Responsive adjustments */
@@ -50,9 +66,9 @@
   .fab {
     bottom: var(--space-lg);
     right: var(--space-lg);
-    width: 48px;
-    height: 48px;
-    font-size: var(--font-size-xl);
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
   }
 }
 
